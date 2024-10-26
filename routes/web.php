@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\HorarioController;
+use App\Http\Controllers\ReservaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
 Route::get('/horarios', [HorarioController::class, 'index'])->name('horarios');
 Route::post('/reservas', [ReservaController::class, 'store']);
 Route::get('/admin/reservas', [ReservaController::class, 'index']);
