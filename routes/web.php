@@ -16,3 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/horarios', [HorarioController::class, 'index'])->name('horarios');
+Route::post('/reservas', [ReservaController::class, 'store']);
+Route::get('/admin/reservas', [ReservaController::class, 'index']);
+Route::post('/admin/reservas/{id}/aprobar', [ReservaController::class, 'aprobar']);
+Route::post('/admin/reservas/{id}/rechazar', [ReservaController::class, 'rechazar']);
