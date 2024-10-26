@@ -19,6 +19,9 @@ return new class extends Migration
             $table->time('hora');
             $table->enum('estado', ['Disponible', 'No Disponible'])->default('Disponible');
             $table->timestamps();
+
+            // Índice único para evitar duplicados
+            $table->unique(['fecha', 'hora'], 'unique_fecha_hora');
         });
     }
 
