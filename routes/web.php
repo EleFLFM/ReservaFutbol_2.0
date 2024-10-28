@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Route;
 
 // Ruta raíz: Redirige a login si no está autenticado, sino muestra la vista welcome o home.
 Route::get('/', function () {
-    return auth()->check() ? view('home') : view('auth.login');
-})->name('root');
+    return view('welcome');
+});
 
 // Rutas de autenticación
 Auth::routes();
