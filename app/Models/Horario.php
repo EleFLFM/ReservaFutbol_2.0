@@ -10,4 +10,9 @@ class Horario extends Model
     protected $fillable = ['fecha', 'hora', 'estado'];
 
     protected $dates = ['fecha', 'hora'];
+
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class);
+    }
 }

@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Precio extends Model
 {
     use HasFactory;
+
+
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class);
+    }
 }

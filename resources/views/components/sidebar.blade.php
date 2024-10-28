@@ -9,7 +9,7 @@
         <a href="{{route('horarios.index')}}" class="nav-item">Horario cancha</a>
         @if(auth()->user()->hasRole('administrador'))
         <a href="{{route('horarios.create')}}" class="nav-item">Crear horarios</a>
-        <a href="{{route('horarios.index')}}" class="nav-item">Reservas</a>
+        <a href="{{route('reservas.index')}}" class="nav-item">Reservas</a>
 
         @endif
 
@@ -23,7 +23,7 @@
         </a>
 
         @else
-        <a href="{{route('horarios.index')}}" class="nav-item">Inicio</a>
+        <a href="{{url('/')}}" class="nav-item">Inicio</a>
         <a href="{{route('horarios.index')}}" class="nav-item">Horario cancha</a>
         @endif
     </nav>

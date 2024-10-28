@@ -11,7 +11,7 @@ class ReservaController extends Controller
     public function index()
     {
         $reservas = Reserva::with('user', 'horario')->get();
-        return view('admin.reservas.index', compact('reservas'));
+        return view('reservas.index', compact('reservas'));
     }
 
     public function store(Request $request)
