@@ -10,7 +10,8 @@ class ReservaController extends Controller
 {
     public function index()
     {
-        $reservas = Reserva::with('user', 'horario')->get();
+
+        $reservas = Reserva::with('user', 'horario', 'precio')->get();
         return view('reservas.index', compact('reservas'));
     }
 
@@ -50,9 +51,23 @@ class ReservaController extends Controller
 
     public function aprobar($id)
     {
+        // Encuentra la reserva específica
         $reserva = Reserva::find($id);
+
+        // Si no se encuentra la reserva, retorna un error
+        if (!$reserva) {
+            return back()->with('error', 'Reserva no encontrada.');
+        }
+
+        // Cambia el estado de la reserva actual a 'Aprobada'
         $reserva->update(['estado' => 'Aprobada']);
-        return back()->with('success', 'Reserva aprobada.');
+
+        // Cambia el estado de las demás reservas con el mismo horario_id a 'Rechazada'
+        Reserva::where('horario_id', $reserva->horario_id)
+            ->where('id', '!=', $reserva->id) // Excluye la reserva aprobada actual
+            ->update(['estado' => 'Rechazada']);
+
+        return back()->with('success', 'Reserva aprobada. Las demás reservas para el mismo horario han sido rechazadas.');
     }
 
     public function rechazar($id)

@@ -172,21 +172,7 @@
                                 @enderror
                             </div>
 
-                            <div class="form-group">
-                                <label for="reg-phone">Celular</label>
-                                <input type="tel"
-                                    id="reg-phone"
-                                    name="phone"
-                                    class="form-control @error('phone') is-invalid @enderror"
-                                    value="{{ old('phone') }}"
-                                    required
-                                    autocomplete="tel">
-                                @error('phone')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                                @enderror
-                            </div>
+
 
                             <div class="form-group">
                                 <label for="reg-password">Contraseña</label>

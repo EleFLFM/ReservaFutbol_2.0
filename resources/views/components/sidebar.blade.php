@@ -13,7 +13,7 @@
 
         @endif
 
-        <a href="{{route('horarios.index')}}" class="nav-item">Configurar</a>
+        <a href="{{route('user.edit')}}" class="nav-item">Configurar</a>
         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
             @csrf
         </form>
