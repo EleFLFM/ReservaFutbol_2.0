@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,14 +9,27 @@
     <link rel="stylesheet" href="/css/stylesWelcome.css">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 @section('main')
 <!DOCTYPE html>
 <html>
 
+
 <body>
+    @if(session('success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Operación Exitosa',
+            text: "{{ session('success') }}",
+            confirmButtonText: 'Aceptar'
+        });
+    </script>
+    @endif
+
     <div class="horarios-container">
         @if($reservas->isEmpty())
         <div class="sin-horarios">
@@ -30,18 +44,35 @@
                     <th>Cliente</th>
                     <th>Estado</th>
                     <th>Precio</th>
+                    <th>Horario</th>
                     <th>Acción</th>
-
                 </tr>
             </thead>
             <tbody>
                 @foreach($reservas as $reserva)
                 <tr>
                     <td>{{ $reserva->id }}</td>
-                    <td>{{ $reserva->user_id }}</td>
+                    <td>{{ $reserva->user->name }}</td>
                     <td>{{ $reserva->estado }}</td>
-                    <td>{{ $reserva->precio_id }}</td>
-                    <td> <button type="submit" class="btn btn-outline"></button>
+                    <td>{{ $reserva->precio->valor }}</td>
+                    <td>{{ $reserva->horario->hora }}</td>
+
+                    <td>
+                        <form action="{{ route('reservas.aprobar', $reserva->id) }}" method="post" class="d-inline-block">
+                            @csrf
+                            <button onclick="funcion" type="submit" class="btn btn-outline">
+                                <i class='bx bxs-check-circle bx-tada' style='color:#73dc1f; font-size: 30px;'></i>
+                            </button>
+                        </form>
+
+                        <form action="{{ route('reservas.rechazar', $reserva->id) }}" method="post" class="d-inline-block">
+                            @csrf
+                            <button type="submit" class="btn btn-outline">
+                                <i class='bx bxs-x-circle bx-tada' style='color:#ff0000; font-size: 30px;'></i>
+                            </button>
+                        </form>
+
+
                     </td>
 
 

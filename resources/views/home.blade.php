@@ -8,11 +8,22 @@
     <link rel="stylesheet" href="css/stylesWelcome.css">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </head>
 
 @section('main')
+@if(session('success'))
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Operación Exitosa',
+        text: "{{ session('success') }}",
+        confirmButtonText: 'Aceptar'
+    });
+</script>
+@endif
 <main class="content">
     <h1 class="title">
         Que horario le gustaria <span>reservar</span>?

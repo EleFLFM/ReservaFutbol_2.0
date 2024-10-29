@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
     <title>Tu Aplicación</title>
 
+
 </head>
 
 
@@ -19,6 +20,7 @@
     </div>
 
     <script src="{{ asset('js/app.js') }}"></script>
+
 </body>
 
 </html>
