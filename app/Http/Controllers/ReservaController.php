@@ -11,7 +11,9 @@ class ReservaController extends Controller
     public function index()
     {
 
-        $reservas = Reserva::with('user', 'horario', 'precio')->get();
+        $reservas = Reserva::with('user', 'horario', 'precio')
+            ->orderBy('created_at', 'desc') // Ordena por fecha de creación en orden descendente
+            ->paginate(5); // Muestra 10 reservas por página        
         return view('reservas.index', compact('reservas'));
     }
 
@@ -25,7 +27,7 @@ class ReservaController extends Controller
 
         // Verificar si el horario aún está disponible
         $horario = Horario::find($request->horario_id);
-        
+
         if (!$horario) {
             return back()->with('error', 'El horario no fue encontrado.');
         }

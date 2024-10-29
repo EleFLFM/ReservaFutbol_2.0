@@ -80,7 +80,9 @@
                 @endforeach
             </tbody>
         </table>
-
+        <div class="d-flex justify-content-center mt-4">
+            {{ $reservas->links('pagination::bootstrap-4') }}
+        </div>
 
         @endif
     </div>
