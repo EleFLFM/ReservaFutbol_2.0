@@ -9,101 +9,176 @@
     <link rel="stylesheet" href="/css/stylesWelcome.css">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
-
 @section('main')
+<div class="crear-horario-container">
+    <h2 class="form-title">Crear Horarios</h2>
 
-<body>
-    <div class="crear-horario-container">
-        <h2 class="form-title">Crear Horarios</h2>
+    <form action="{{ route('horarios.store') }}" method="POST" id="horariosForm">
+        @csrf
 
-        <div class="alert alert-info">
-            Puedes crear horarios entre las 7:00 AM y 10:00 PM
+        <div class="form-group">
+            <label class="form-label">Fecha</label>
+            <input type="date"
+                name="fecha"
+                class="form-input"
+                min="{{ date('Y-m-d') }}"
+                required>
         </div>
 
-        <form action="{{ route('horarios.store') }}" method="POST" id="horariosForm">
-            @csrf
-
+        <div class="form-row">
             <div class="form-group">
-                <label class="form-label">Fecha</label>
-                <input type="date"
-                    name="fecha"
-                    class="form-input"
-                    min="{{ date('Y-m-d') }}"
-                    required>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Hora Inicio</label>
-                    <select name="hora_inicio" class="form-select" required>
-                        @for($hora = 7; $hora <= 21; $hora++)
-                            <option value="{{ sprintf('%02d:00', $hora) }}">
-                            {{ sprintf('%02d:00', $hora) }}
-                            </option>
-                            @endfor
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Hora Fin</label>
-                    <select name="hora_fin" class="form-select" required>
-                        @for($hora = 8; $hora <= 22; $hora++)
-                            <option value="{{ sprintf('%02d:00', $hora) }}">
-                            {{ sprintf('%02d:00', $hora) }}
-                            </option>
-                            @endfor
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Estado</label>
-                <select name="estado" class="form-select" required>
-                    <option value="Disponible">Disponible</option>
-                    <option value="Ocupado">Ocupado</option>
+                <label class="form-label">Hora Inicio</label>
+                <select name="hora_inicio" class="form-select" required>
+                    @for($hora = 7; $hora <= 21; $hora++)
+                        <option value="{{ sprintf('%02d:00', $hora) }}">
+                        {{ sprintf('%02d:00', $hora) }}
+                        </option>
+                    @endfor
                 </select>
             </div>
 
-            <div id="previewSection" class="preview-section">
-                <h3 class="preview-title">Vista previa de horarios a crear:</h3>
-                <ul class="preview-list" id="previewList"></ul>
+            <div class="form-group">
+                <label class="form-label">Hora Fin</label>
+                <select name="hora_fin" class="form-select" required>
+                    @for($hora = 8; $hora <= 22; $hora++)
+                        <option value="{{ sprintf('%02d:00', $hora) }}">
+                        {{ sprintf('%02d:00', $hora) }}
+                        </option>
+                    @endfor
+                </select>
             </div>
+        </div>
 
-            <button type="submit" class="btn-submit">Crear Horarios</button>
-        </form>
-    </div>
+        <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select name="estado" class="form-select" required>
+                <option value="Disponible">Disponible</option>
+                <option value="Ocupado">Ocupado</option>
+            </select>
+        </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('horariosForm');
-            const previewSection = document.getElementById('previewSection');
-            const previewList = document.getElementById('previewList');
+        <div id="previewSection" class="preview-section">
+            <h3 class="preview-title">Vista previa de horarios a crear:</h3>
+            <ul class="preview-list" id="previewList"></ul>
+        </div>
 
-            function updatePreview() {
-                const fecha = form.fecha.value;
-                const horaInicio = parseInt(form.hora_inicio.value);
-                const horaFin = parseInt(form.hora_fin.value);
+        <button type="submit" class="btn-submit">Crear Horarios</button>
+    </form>
+</div>
 
-                if (!fecha || !horaInicio || !horaFin) return;
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-                previewList.innerHTML = '';
-                previewSection.style.display = 'block';
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('horariosForm');
+        const previewSection = document.getElementById('previewSection');
+        const previewList = document.getElementById('previewList');
+        const horaInicioSelect = form.hora_inicio;
 
-                for (let hora = horaInicio; hora < horaFin; hora++) {
-                    const horaFormateada = `${String(hora).padStart(2, '0')}:00`;
-                    const li = document.createElement('li');
-                    li.className = 'preview-item';
-                    li.textContent = `${fecha} - ${horaFormateada}`;
-                    previewList.appendChild(li);
+        // Función para obtener la próxima hora disponible
+        function getProximaHora() {
+            const ahora = new Date();
+            const hora = ahora.getHours();
+            const minutos = ahora.getMinutes();
+            return minutos > 0 ? hora + 1 : hora;
+        }
+
+        // Función para actualizar las horas disponibles
+        function actualizarHorasDisponibles() {
+            const proximaHora = getProximaHora();
+            
+            // Deshabilitar horas pasadas en el select de hora inicio
+            Array.from(horaInicioSelect.options).forEach(option => {
+                const optionHora = parseInt(option.value);
+                option.disabled = optionHora < proximaHora || optionHora < 7;
+                // Si la hora actual está deshabilitada y seleccionada, seleccionar la próxima hora disponible
+                if (option.disabled && option.selected) {
+                    const nextAvailable = Array.from(horaInicioSelect.options)
+                        .find(opt => !opt.disabled);
+                    if (nextAvailable) {
+                        nextAvailable.selected = true;
+                    }
                 }
+            });
+        }
+
+        // Actualizar horas disponibles al cargar y cada minuto
+        actualizarHorasDisponibles();
+        setInterval(actualizarHorasDisponibles, 60000);
+
+        // Manejar el envío del formulario
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const horaInicio = parseInt(form.hora_inicio.value);
+            const proximaHora = getProximaHora();
+
+            // Validar hora de inicio
+            if (horaInicio < proximaHora) {
+                Swal.fire({
+                    title: 'Error',
+                    text: `Solo puedes crear horarios a partir de las ${proximaHora}:00`,
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
+                return;
             }
 
-            form.fecha.addEventListener('change', updatePreview);
-            form.hora_inicio.addEventListener('change', updatePreview);
-            form.hora_fin.addEventListener('change', updatePreview);
+            Swal.fire({
+                title: '¿Desea crear horarios de 7:00 a 22:00?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, crear horarios',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
         });
-    </script>
+
+        function updatePreview() {
+            const fecha = form.fecha.value;
+            const horaInicio = parseInt(form.hora_inicio.value);
+            const horaFin = parseInt(form.hora_fin.value);
+
+            if (!fecha || !horaInicio || !horaFin) return;
+
+            // Validar que hora fin sea mayor que hora inicio
+            if (horaFin < horaInicio) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'La hora de fin debe ser mayor que la hora de inicio',
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
+                return;
+            }
+
+            previewList.innerHTML = '';
+            previewSection.style.display = 'block';
+
+            for (let hora = horaInicio; hora < horaFin; hora++) {
+                const horaFormateada = `${String(hora).padStart(2, '0')}:00`;
+                const li = document.createElement('li');
+                li.className = 'preview-item';
+                li.textContent = `${fecha} - ${horaFormateada}`;
+                previewList.appendChild(li);
+            }
+        }
+
+        form.fecha.addEventListener('change', updatePreview);
+        form.hora_inicio.addEventListener('change', updatePreview);
+        form.hora_fin.addEventListener('change', updatePreview);
+    });
+</script>
+@endsection
     <style>
         .crear-horario-container {
             max-width: 600px;
@@ -203,8 +278,8 @@
             font-size: 14px;
         }
     </style>
-</body>
-@endsection
+
+
 
 
 </html>

@@ -20,7 +20,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::resource('horarios', HorarioController::class);
 
 // Rutas para gestionar reservas
-Route::post('/reservas', [ReservaController::class, 'store']);
+Route::post('/reservas', [ReservaController::class, 'store'])->name('reservas.store');
 Route::get('/admin/reservas', [ReservaController::class, 'index'])->name('reservas.index');
 Route::post('/admin/reservas/{id}/aprobar', [ReservaController::class, 'aprobar']);
 Route::post('/admin/reservas/{id}/rechazar', [ReservaController::class, 'rechazar']);
