@@ -10,7 +10,7 @@ class HorarioController extends Controller
     // Mostrar todos los horarios
     public function index()
     {
-        $horarios = Horario::orderBy('created_at', 'desc')->paginate(6); // Muestra 10 horarios por página
+        $horarios = Horario::with(['reserva.user'])->orderBy('created_at', 'desc')->paginate(6);
         return view('horarios.index', compact('horarios'));
     }
 

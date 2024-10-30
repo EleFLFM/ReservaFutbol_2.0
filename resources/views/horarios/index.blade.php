@@ -41,7 +41,7 @@
             border-collapse: collapse;
             margin-top: 20px;
             background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .horarios-tabla th,
@@ -57,6 +57,13 @@
         }
 
         .estado {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .esperando {
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 14px;
@@ -119,45 +126,47 @@
         .pagination {
             margin-top: 20px;
         }
+
         .modal-confirm {
             color: #636363;
         }
-        
+
         .modal-confirm .modal-content {
             padding: 20px;
             border-radius: 5px;
             border: none;
         }
-        
+
         .modal-confirm .modal-header {
             border-bottom: none;
             position: relative;
         }
-        
+
         .modal-confirm h4 {
             text-align: center;
             font-size: 26px;
             margin: 30px 0 -15px;
         }
-        
-        .modal-confirm .form-control, .modal-confirm .btn {
+
+        .modal-confirm .form-control,
+        .modal-confirm .btn {
             min-height: 40px;
             border-radius: 3px;
         }
-        
+
         .modal-confirm .close {
             position: absolute;
             top: -5px;
             right: -5px;
         }
-        
+
         .modal-confirm .modal-footer {
             border: none;
             text-align: center;
             border-radius: 5px;
             font-size: 13px;
         }
-        
+
         .modal-confirm .icon-box {
             color: #fff;
             position: absolute;
@@ -174,7 +183,7 @@
             text-align: center;
             box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
         }
-        
+
         .modal-confirm .icon-box i {
             font-size: 58px;
             position: relative;
@@ -186,104 +195,112 @@
 <body>
     <div class="horarios-container">
         @if(session('success'))
-            <div class="alert alert-success" role="alert">
-                {{ session('success') }}
-            </div>
+        <div class="alert alert-success" role="alert">
+            {{ session('success') }}
+        </div>
         @endif
 
         @if(session('error'))
-            <div class="alert alert-danger" role="alert">
-                {{ session('error') }}
-            </div>
+        <div class="alert alert-danger" role="alert">
+            {{ session('error') }}
+        </div>
         @endif
 
         @if($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
         @endif
 
         @if($horarios->isEmpty())
-            <div class="sin-horarios">
-                <p class="mb-0">No existen horarios disponibles</p>
-            </div>
+        <div class="sin-horarios">
+            <p class="mb-0">No existen horarios disponibles</p>
+        </div>
         @else
-            <table class="horarios-tabla">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($horarios as $horario)
-                        <tr>
-                            <td>{{ \Carbon\Carbon::parse($horario->fecha)->format('d/m/Y') }}</td>
-                            <td>{{ \Carbon\Carbon::parse($horario->hora)->format('H:i') }}</td>
-                            <td>
-                                <span class="estado {{ strtolower($horario->estado) }}">
-                                    {{ $horario->estado }}
-                                </span>
-                            </td>
-                            <td>
-                                @if($horario->estado == 'Disponible')
-                                    <button type="button" 
-                                            class="btn-reservar" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#confirmModal{{ $horario->id }}"
-                                            data-hora="{{ \Carbon\Carbon::parse($horario->hora)->format('H:i') }}"
-                                            data-fecha="{{ \Carbon\Carbon::parse($horario->fecha)->format('d/m/Y') }}">
-                                        Reservar
-                                    </button>
+        <table class="horarios-tabla">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($horarios as $horario)
+                <tr>
+                    <td>{{ \Carbon\Carbon::parse($horario->fecha)->format('d/m/Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($horario->hora)->format('H:i') }}</td>
+                    <td>
+                        @if($horario->reserva)
+                        Reservada: {{ $horario->reserva->user->name }} <!-- Nombre del cliente que reservó -->
+                        @else
+                        @if($horario->estado == 'Disponible')
+                        <span class="estado {{ strtolower($horario->estado) }}">
+                            {{ $horario->estado }}
+                        </span>
+                        @else
+                        <span class="esperando {{ strtolower($horario->estado) }}">Esperando Respuesta</span>
+                        @endif
+                        @endif
+                    </td>
+                    <td>
+                        @if($horario->estado == 'Disponible')
+                        <button type="button"
+                            class="btn-reservar"
+                            data-bs-toggle="modal"
+                            data-bs-target="#confirmModal{{ $horario->id }}"
+                            data-hora="{{ \Carbon\Carbon::parse($horario->hora)->format('H:i') }}"
+                            data-fecha="{{ \Carbon\Carbon::parse($horario->fecha)->format('d/m/Y') }}">
+                            Reservar
+                        </button>
 
-                                    <!-- Modal de Confirmación -->
-                                    <div class="modal fade" id="confirmModal{{ $horario->id }}" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-confirm">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="confirmModalLabel">Confirmar Reserva</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    ¿Deseas reservar el horario del día {{ \Carbon\Carbon::parse($horario->fecha)->format('d/m/Y') }} 
-                                                    a las {{ \Carbon\Carbon::parse($horario->hora)->format('H:i') }}?
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <form action="{{ route('reservas.store') }}" method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="horario_id" value="{{ $horario->id }}">
-                                                        <input type="hidden" name="user_id" value="{{ auth()->id() }}">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                        <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
+                        <!-- Modal de Confirmación -->
+                        <div class="modal fade" id="confirmModal{{ $horario->id }}" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-confirm">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="confirmModalLabel">Confirmar Reserva</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                @else
-                                    <button class="btn-disabled" disabled>X</button>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                    <div class="modal-body">
+                                        ¿Deseas reservar el horario del día {{ \Carbon\Carbon::parse($horario->fecha)->format('d/m/Y') }}
+                                        a las {{ \Carbon\Carbon::parse($horario->hora)->format('H:i') }}?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <form action="{{ route('reservas.store') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="horario_id" value="{{ $horario->id }}">
+                                            <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @else
+                        <button class="btn-disabled" disabled>X</button>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
 
-            <div class="d-flex justify-content-center mt-4">
-                {{ $horarios->links('pagination::bootstrap-4') }}
-            </div>
+        <div class="d-flex justify-content-center mt-4">
+            {{ $horarios->links('pagination::bootstrap-4') }}
+        </div>
         @endif
     </div>
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Script para auto-ocultar las alertas -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {

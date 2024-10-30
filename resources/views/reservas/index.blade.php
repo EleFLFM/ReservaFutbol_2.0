@@ -53,7 +53,19 @@
                 <tr>
                     <td>{{ $reserva->id }}</td>
                     <td>{{ $reserva->user->name }}</td>
-                    <td>{{ $reserva->estado }}</td>
+                    <td>
+                        <span class="
+        @if ($reserva->estado === 'Pendiente')
+            estado-pendiente
+        @elseif ($reserva->estado === 'Aprobada')
+            estado-aprobada
+        @elseif ($reserva->estado === 'Rechazada')
+            estado-rechazada
+        @endif
+    ">
+                            {{ $reserva->estado }}
+                        </span>
+                    </td>
                     <td>{{ $reserva->precio->valor }}</td>
                     <td>{{ $reserva->horario->hora }}</td>
 
@@ -71,6 +83,14 @@
                                 <i class='bx bxs-x-circle bx-tada' style='color:#ff0000; font-size: 30px;'></i>
                             </button>
                         </form>
+                        <form action="{{route('reservas.destroy', $reserva->id) }}" method="POST" class="d-inline-block" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta reserva?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-outline">
+                                <i class='bx bxs-trash bx-tada' style='color:#ff0000; font-size: 30px;'></i>
+                            </button>
+                        </form>
+
 
 
                     </td>
@@ -88,9 +108,32 @@
     </div>
 </body>
 
-
 </html>
 <style>
+    .estado-pendiente {
+        background-color: #ffeb3b;
+        /* Amarillo */
+        color: #000;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .estado-aprobada {
+        background-color: #4caf50;
+        /* Verde */
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .estado-rechazada {
+        background-color: #f44336;
+        /* Rojo */
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
     .horarios-container {
         margin: 20px auto;
         max-width: 1000px;

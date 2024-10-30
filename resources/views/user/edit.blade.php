@@ -13,84 +13,149 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
+
+
+<style>
+    .user-config-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .config-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .config-subheader {
+        color: #6B7280;
+        margin-bottom: 2rem;
+    }
+
+    .config-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #4B5563;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        border: 1px solid #E5E7EB;
+        border-radius: 0.5rem;
+        padding: 0.625rem;
+    }
+
+    .input-group-text {
+        background-color: #F3F4F6;
+        border: 1px solid #E5E7EB;
+        color: #6B7280;
+        cursor: pointer;
+    }
+
+    .input-group-text:hover {
+        background-color: #E5E7EB;
+    }
+
+    .btn-cancel {
+        color: #6B7280;
+        background-color: white;
+        border: 1px solid #E5E7EB;
+        border-radius: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+        background-color: #F3F4F6;
+    }
+
+    .btn-save {
+        background-color: #0066FF;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        transition: all 0.2s;
+    }
+
+    .btn-save:hover {
+        background-color: #0052CC;
+    }
+</style>
+
+
 @section('main')
-<div class="container">
-    <h2>Configuración de usuario</h2>
-    <p>Mis datos personales:</p>
-    <form action="{{ route('user.update')}}" method="POST">
+<div class="user-config-container">
+    <h2 class="config-header">Configuración de usuario</h2>
+    <p class="config-subheader">Mis datos personales:</p>
+
+    <form action="{{ route('user.update') }}" method="POST">
         @csrf
         @method('PUT')
-        <div class="card p-4 mb-4">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="nombre">Nombre completo</label>
+
+        <div class="config-card">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label for="name" class="form-label">Nombre completo</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" id="name" name="name" value="{{ old('nombre', $user->name) }}" required>
-                        <span class="input-group-text"><i class='bx bx-edit-alt'></i></span>
+                        <input type="text"
+                            class="form-control"
+                            id="name"
+                            name="name"
+                            value="{{ old('name', $user->name) }}"
+                            required>
+                        <span class="input-group-text">
+                            <i class='bx bx-edit-alt'></i>
+                        </span>
                     </div>
                 </div>
 
-
-                <div class="col-md-6 mb-3">
-                    <label for="correo">Correo</label>
+                <div class="col-md-6">
+                    <label for="email" class="form-label">Correo</label>
                     <div class="input-group">
-                        <input type="email" class="form-control" id="email" name="email" value="{{ old('correo', $user->email) }}" required>
-                        <span class="input-group-text"><i class='bx bx-edit-alt'></i></span>
+                        <input type="email"
+                            class="form-control"
+                            id="email"
+                            name="email"
+                            value="{{ old('email', $user->email) }}"
+                            required>
+                        <span class="input-group-text">
+                            <i class='bx bx-edit-alt'></i>
+                        </span>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="contrasena">Nueva Contraseña</label>
-                    <input type="password" name="password" id="password" class="form-control">
+                <div class="col-md-6">
+                    <label for="password" class="form-label">Nueva Contraseña</label>
+                    <input type="password"
+                        class="form-control"
+                        id="password"
+                        name="password">
                 </div>
 
-                <div class="form-group">
-                    <label for="contrasena_confirmation">Confirmar Contraseña</label>
-                    <input type="password" name="contrasena_confirmation" id="contrasena_confirmation" class="form-control">
+                <div class="col-md-6">
+                    <label for="password_confirmation" class="form-label">Confirmar Contraseña</label>
+                    <input type="password"
+                        class="form-control"
+                        id="password_confirmation"
+                        name="password_confirmation">
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end mt-3">
-                <button type="button" class="btn btn-outline-secondary me-2">Cancelar cambios</button>
-                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <div class="d-flex justify-content-end gap-3 mt-4">
+                <button type="button" class="btn btn-cancel">
+                    Cancelar cambios
+                </button>
+                <button type="submit" class="btn btn-save">
+                    Guardar cambios
+                </button>
             </div>
         </div>
     </form>
 </div>
-
-<style>
-    .container {
-        max-width: 600px;
-        background-color: #f4f7fa;
-        padding: 20px;
-        border-radius: 10px;
-        font-family: Arial, sans-serif;
-    }
-
-    .card {
-        background-color: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .input-group-text {
-        background-color: #e7f3ff;
-        border-radius: 50%;
-    }
-
-    label {
-        font-weight: bold;
-        color: #333;
-    }
-
-    .btn-outline-secondary {
-        border-radius: 20px;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        border-radius: 20px;
-        color: white;
-    }
-</style>
 @endsection
