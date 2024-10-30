@@ -11,8 +11,8 @@ class Horario extends Model
 
     protected $dates = ['fecha', 'hora'];
 
-    public function reservas()
+    public function reserva()
     {
-        return $this->hasMany(Reserva::class);
+        return $this->hasOne(Reserva::class)->where('estado', 'Aprobada');
     }
 }

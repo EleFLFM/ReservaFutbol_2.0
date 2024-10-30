@@ -79,4 +79,14 @@ class ReservaController extends Controller
         $reserva->horario->update(['estado' => 'Disponible']);
         return back()->with('success', 'Reserva rechazada.');
     }
+
+    // En el controlador de reservas
+    public function destroy($id)
+    {
+        $reserva = Reserva::findOrFail($id);
+        $reserva->update(['estado' => 'Rechazada']);
+        $reserva->horario->update(['estado' => 'Disponible']);
+        $reserva->delete();
+        return back()->with('success', 'Reserva eliminada.');
+    }
 }
