@@ -1,16 +1,14 @@
 @extends('layouts.app')
 
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>ReservaFutbol - Reserva tu cancha</title>
     <link rel="stylesheet" href="/css/stylesWelcome.css">
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/stylescreate.css">
 </head>
 @section('main')
 <div class="crear-horario-container">
@@ -18,40 +16,37 @@
 
     <form action="{{ route('horarios.store') }}" method="POST" id="horariosForm">
         @csrf
-
         <div class="form-group">
             <label class="form-label">Fecha</label>
-            <input type="date"
-                name="fecha"
-                class="form-input"
-                min="{{ date('Y-m-d') }}"
-                required>
+            <input type="date" name="fecha" class="form-input" required>
         </div>
-
+    
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label">Hora Inicio</label>
-                <select name="hora_inicio" class="form-select" required>
-                    @for($hora = 7; $hora <= 21; $hora++)
+                <select name="hora_inicio" id="horaInicio" class="form-select" required>
+                    <option value="">Seleccione hora inicio</option>
+                    @for($hora = 7; $hora <= 22; $hora++)
                         <option value="{{ sprintf('%02d:00', $hora) }}">
-                        {{ sprintf('%02d:00', $hora) }}
+                            {{ sprintf('%02d:00', $hora) }}
                         </option>
                     @endfor
                 </select>
             </div>
-
+    
             <div class="form-group">
                 <label class="form-label">Hora Fin</label>
-                <select name="hora_fin" class="form-select" required>
+                <select name="hora_fin" id="horaFin" class="form-select">
+                    <option value="">Seleccione hora fin</option>
                     @for($hora = 8; $hora <= 22; $hora++)
                         <option value="{{ sprintf('%02d:00', $hora) }}">
-                        {{ sprintf('%02d:00', $hora) }}
+                            {{ sprintf('%02d:00', $hora) }}
                         </option>
                     @endfor
                 </select>
             </div>
         </div>
-
+    
         <div class="form-group">
             <label class="form-label">Estado</label>
             <select name="estado" class="form-select" required>
@@ -59,227 +54,297 @@
                 <option value="Ocupado">Ocupado</option>
             </select>
         </div>
-
-        <div id="previewSection" class="preview-section">
+    
+        <div id="previewSection" class="preview-section" style="display: none;">
             <h3 class="preview-title">Vista previa de horarios a crear:</h3>
             <ul class="preview-list" id="previewList"></ul>
         </div>
-
+    
         <button type="submit" class="btn-submit">Crear Horarios</button>
     </form>
+    
 </div>
 
-<!-- SweetAlert2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('horariosForm');
-        const previewSection = document.getElementById('previewSection');
-        const previewList = document.getElementById('previewList');
-        const horaInicioSelect = form.hora_inicio;
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('horariosForm');
+    const previewSection = document.getElementById('previewSection');
+    const previewList = document.getElementById('previewList');
+    const horaInicioSelect = form.hora_inicio;
+    const horaFinSelect = form.hora_fin;
+    const fechaInput = form.fecha;
 
-        // Función para obtener la próxima hora disponible
-        function getProximaHora() {
-            const ahora = new Date();
-            const hora = ahora.getHours();
-            const minutos = ahora.getMinutes();
-            return minutos > 0 ? hora + 1 : hora;
-        }
+    // Asegurarse de que la fecha actual esté disponible
+    const today = new Date();
+    const formattedToday = today.getFullYear() + '-' + 
+                          String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(today.getDate()).padStart(2, '0');
+    
+    fechaInput.min = formattedToday;
+    fechaInput.value = formattedToday;
 
-        // Función para actualizar las horas disponibles
-        function actualizarHorasDisponibles() {
-            const proximaHora = getProximaHora();
-            
-            // Deshabilitar horas pasadas en el select de hora inicio
-            Array.from(horaInicioSelect.options).forEach(option => {
-                const optionHora = parseInt(option.value);
-                option.disabled = optionHora < proximaHora || optionHora < 7;
-                // Si la hora actual está deshabilitada y seleccionada, seleccionar la próxima hora disponible
-                if (option.disabled && option.selected) {
-                    const nextAvailable = Array.from(horaInicioSelect.options)
-                        .find(opt => !opt.disabled);
-                    if (nextAvailable) {
-                        nextAvailable.selected = true;
-                    }
-                }
-            });
-        }
+    // Mostrar alerta informativa al cargar la página
+    Swal.fire({
+        title: 'Información',
+        text: 'Los horarios disponibles son de 7:00 a 22:00',
+        icon: 'info',
+        confirmButtonText: 'Entendido'
+    });
 
-        // Actualizar horas disponibles al cargar y cada minuto
-        actualizarHorasDisponibles();
-        setInterval(actualizarHorasDisponibles, 60000);
+    // Función para formatear fecha en YYYY-MM-DD
+    function formatDate(date) {
+        return date.getFullYear() + '-' + 
+               String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(date.getDate()).padStart(2, '0');
+    }
 
-        // Manejar el envío del formulario
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+    // Función para obtener la hora actual
+    function getHoraActual() {
+        return new Date().getHours();
+    }
 
-            const horaInicio = parseInt(form.hora_inicio.value);
-            const proximaHora = getProximaHora();
+    // Función para comparar si dos fechas son el mismo día
+    function esMismoDia(fecha1, fecha2) {
+        return formatDate(fecha1) === formatDate(fecha2);
+    }
 
-            // Validar hora de inicio
-            if (horaInicio < proximaHora) {
-                Swal.fire({
-                    title: 'Error',
-                    text: `Solo puedes crear horarios a partir de las ${proximaHora}:00`,
-                    icon: 'error',
-                    confirmButtonText: 'Ok'
-                });
+    // Función para actualizar las horas disponibles según la fecha
+    function actualizarHorasDisponibles() {
+        const fechaSeleccionada = new Date(fechaInput.value + 'T00:00:00');
+        const hoy = new Date();
+        const esHoy = esMismoDia(fechaSeleccionada, hoy);
+        const horaActual = getHoraActual();
+        
+        // Resetear valores
+        horaInicioSelect.value = '';
+        horaFinSelect.value = '';
+        
+        Array.from(horaInicioSelect.options).forEach(option => {
+            if (option.value === '') {
+                option.disabled = false;
                 return;
             }
 
-            Swal.fire({
-                title: '¿Desea crear horarios de 7:00 a 22:00?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, crear horarios',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
-            });
+            const horaOpcion = parseInt(option.value);
+            
+            if (esHoy) {
+                // Si es hoy, solo deshabilitar horas que ya pasaron
+                option.disabled = horaOpcion <= horaActual;
+            } else {
+                // Si es fecha futura, habilitar todas las horas
+                option.disabled = false;
+            }
         });
 
-        function updatePreview() {
-            const fecha = form.fecha.value;
-            const horaInicio = parseInt(form.hora_inicio.value);
-            const horaFin = parseInt(form.hora_fin.value);
-
-            if (!fecha || !horaInicio || !horaFin) return;
-
-            // Validar que hora fin sea mayor que hora inicio
-            if (horaFin < horaInicio) {
+        // Si es hoy y no hay opciones habilitadas disponibles, mostrar mensaje
+        if (esHoy) {
+            const hayHorasDisponibles = Array.from(horaInicioSelect.options)
+                .some(option => !option.disabled && option.value !== '');
+            
+            if (!hayHorasDisponibles) {
                 Swal.fire({
-                    title: 'Error',
-                    text: 'La hora de fin debe ser mayor que la hora de inicio',
-                    icon: 'error',
-                    confirmButtonText: 'Ok'
+                    title: 'Información',
+                    text: 'No hay más horarios disponibles para hoy. Por favor seleccione otra fecha.',
+                    icon: 'info',
+                    confirmButtonText: 'Entendido'
                 });
+            }
+        }
+
+        actualizarHorasFin();
+    }
+
+    // Función para actualizar las opciones de hora fin
+    function actualizarHorasFin() {
+        const horaInicio = horaInicioSelect.value;
+        
+        horaFinSelect.value = '';
+
+        Array.from(horaFinSelect.options).forEach(option => {
+            if (option.value === '') {
+                option.disabled = false;
                 return;
             }
+            const horaFinNum = parseInt(option.value);
+            const horaInicioNum = parseInt(horaInicio);
+            option.disabled = !horaInicio || horaFinNum <= horaInicioNum;
+        });
+    }
 
-            previewList.innerHTML = '';
-            previewSection.style.display = 'block';
+    // Event listeners
+    fechaInput.addEventListener('change', function() {
+        actualizarHorasDisponibles();
+        updatePreview();
+    });
 
-            for (let hora = horaInicio; hora < horaFin; hora++) {
-                const horaFormateada = `${String(hora).padStart(2, '0')}:00`;
-                const li = document.createElement('li');
-                li.className = 'preview-item';
-                li.textContent = `${fecha} - ${horaFormateada}`;
-                previewList.appendChild(li);
+    horaInicioSelect.addEventListener('change', function() {
+        actualizarHorasFin();
+        updatePreview();
+    });
+
+    horaFinSelect.addEventListener('change', updatePreview);
+
+    // Inicializar los campos
+    actualizarHorasDisponibles();
+});
+// Función para generar intervalos de tiempo
+function generarIntervalos(horaInicio, horaFin) {
+    const intervalos = [];
+    let inicio = parseInt(horaInicio.split(':')[0]);
+    const fin = parseInt(horaFin.split(':')[0]);
+    
+    while (inicio < fin) {
+        const horaActual = `${String(inicio).padStart(2, '0')}:00`;
+        const horaSiguiente = `${String(inicio + 1).padStart(2, '0')}:00`;
+        intervalos.push(`${horaActual} - ${horaSiguiente}`);
+        inicio++;
+    }
+    
+    return intervalos;
+}
+
+// Función para actualizar la vista previa
+function updatePreview() {
+    const previewSection = document.getElementById('previewSection');
+    const previewList = document.getElementById('previewList');
+    const fecha = document.querySelector('input[name="fecha"]').value;
+    const horaInicio = document.querySelector('select[name="hora_inicio"]').value;
+    const horaFin = document.querySelector('select[name="hora_fin"]').value;
+    const estado = document.querySelector('select[name="estado"]').value;
+
+    // Limpiar la lista previa
+    previewList.innerHTML = '';
+
+    // Verificar si tenemos todos los datos necesarios
+    if (fecha && horaInicio && horaFin) {
+        const intervalos = generarIntervalos(horaInicio, horaFin);
+        
+        // Mostrar la sección de vista previa
+        previewSection.style.display = 'block';
+        
+        // Crear elementos de la lista para cada intervalo
+        intervalos.forEach(intervalo => {
+            const li = document.createElement('li');
+            li.className = 'preview-item';
+            
+            // Formatear la fecha para mostrar
+            const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            li.innerHTML = `
+                <div class="preview-item-content">
+                    <span class="preview-date">${fechaFormateada}</span>
+                    <span class="preview-time">${intervalo}</span>
+                    <span class="preview-status ${estado.toLowerCase()}">${estado}</span>
+                </div>
+            `;
+            
+            previewList.appendChild(li);
+        });
+    } else {
+        // Ocultar la sección de vista previa si faltan datos
+        previewSection.style.display = 'none';
+    }
+}
+
+// Agregar los event listeners necesarios
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('horariosForm');
+    
+    // Actualizar la vista previa cuando cambie cualquier campo
+    form.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('change', updatePreview);
+    });
+});
+document.getElementById('horariosForm').addEventListener('submit', function (event) {
+        event.preventDefault(); // Evita que el formulario se envíe de inmediato
+
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: '¿Deseas agregar este horario al sistema?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, agregar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Si confirma, envía el formulario
+                this.submit();
+            } else {
+                // Opcional: mensaje si se cancela la acción
+                Swal.fire('Cancelado', 'El horario no fue agregado', 'info');
             }
-        }
-
-        form.fecha.addEventListener('change', updatePreview);
-        form.hora_inicio.addEventListener('change', updatePreview);
-        form.hora_fin.addEventListener('change', updatePreview);
+        });
     });
 </script>
+<style>
+    .preview-section {
+    margin-top: 2rem;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.preview-title {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.preview-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.preview-item {
+    background-color: white;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+}
+
+.preview-item-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.preview-date {
+    font-weight: 500;
+    color: #444;
+}
+
+.preview-time {
+    color: #666;
+}
+
+.preview-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.preview-status.disponible {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.preview-status.ocupado {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+</style>
 @endsection
-    <style>
-        .crear-horario-container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background: white;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            font-family: Arial, sans-serif;
-        }
-
-        .form-title {
-            color: #003366;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .form-input,
-        .form-select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        .btn-submit {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-        }
-
-        .btn-submit:hover {
-            background: #45a049;
-        }
-
-        .alert {
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-
-        .alert-info {
-            background: #e3f2fd;
-            color: #1565c0;
-            border: 1px solid #bbdefb;
-        }
-
-        .preview-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            display: none;
-        }
-
-        .preview-title {
-            font-weight: 500;
-            margin-bottom: 10px;
-            color: #003366;
-        }
-
-        .preview-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .preview-item {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
-    </style>
-
-
-
-
-</html>
